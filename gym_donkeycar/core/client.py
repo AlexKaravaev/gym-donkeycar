@@ -123,7 +123,7 @@ class SDClient:
                                 self.on_msg_recv(j)
                             except Exception as e:
                                 print("Exception:", e)
-                                print("json:", m)
+                                #print("json:", m)
                         else:
                             partial.append(m)
                             if last_char == '}':
@@ -135,7 +135,7 @@ class SDClient:
                                         self.on_msg_recv(j)
                                     except Exception as e:
                                         print(e)
-                                        print("json:", assembled_packet)
+                                        #print("json:", assembled_packet)
                                 else:
                                     print("failed packet.")
                                 partial.clear()

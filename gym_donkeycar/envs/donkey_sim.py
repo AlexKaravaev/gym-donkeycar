@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class DonkeyUnitySimContoller():
 
     def __init__(self, level, host='127.0.0.1',
-                 port=9090, max_cte=5.0, loglevel='INFO', cam_resolution=(120, 160, 3)):
+                 port=9090, max_cte=5.0, loglevel='INFO', cam_resolution=(120, 160, 3), roi=None):
 
         logger.setLevel(loglevel)
 
@@ -34,7 +34,7 @@ class DonkeyUnitySimContoller():
 
         self.handler = DonkeyUnitySimHandler(
             level, max_cte=max_cte,
-            cam_resolution=cam_resolution)
+            cam_resolution=cam_resolution, roi=roi)
 
         self.client = SimClient(self.address, self.handler)
 
@@ -82,15 +82,18 @@ class DonkeyUnitySimContoller():
 
 class DonkeyUnitySimHandler(IMesgHandler):
 
-    def __init__(self, level, max_cte=5.0, cam_resolution=None):
+    def __init__(self, level, max_cte=5.0, cam_resolution=None, roi=None):
         self.iSceneToLoad = level
         self.loaded = False
         self.max_cte = max_cte
         self.timer = FPSTimer()
 
+        self.roi = roi
+        print(f"Roi {self.roi}")
         # sensor size - height, width, depth
         self.camera_img_size = cam_resolution
         self.image_array = np.zeros(self.camera_img_size)
+        self.original_image = None
         self.last_obs = None
         self.hit = "none"
         self.cte = 0.0
@@ -201,7 +204,18 @@ class DonkeyUnitySimHandler(IMesgHandler):
 
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-
+        image = np.array(image)
+         # Save original image for render
+        self.original_image = np.copy(image)
+        # Resize if using higher resolution images
+        # image = cv2.resize(image, CAMERA_RESOLUTION)
+        # Region of interest
+        r = self.roi
+        image = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
+        # Convert RGB to BGR
+        image = image[:, :, ::-1]
+        
+        
         # always update the image_array as the observation loop will hang if not changing.
         self.image_array = np.asarray(image)
 
