@@ -210,10 +210,11 @@ class DonkeyUnitySimHandler(IMesgHandler):
         # Resize if using higher resolution images
         # image = cv2.resize(image, CAMERA_RESOLUTION)
         # Region of interest
-        r = self.roi
-        image = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
+        if self.roi:
+            r = self.roi
+            image = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
         # Convert RGB to BGR
-        image = image[:, :, ::-1]
+        # image = image[:, :, ::-1]
         
         
         # always update the image_array as the observation loop will hang if not changing.
